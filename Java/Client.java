@@ -1,22 +1,50 @@
-public class Client {
+import java.io.*;
+import java.net.*;
 
+public class Client {
+  public static Object makeRequest(RemoteEcho requestMethod) {
+    try (Socket sock = new Socket("localhost", PORT);) {
+        OutputStream sockOut = sock.getOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(sockOut);
+        oos.writeObject(requestMethod);
+
+        InputStream sockIn = sock.getInputStream();
+        ObjectInputStream ois = new ObjectInputStream(sockIn);
+        // sock.close();
+
+        // send the response
+        Object response = ois.readObject();
+        if (response instanceof Exception) throw (Exception) response;
+        return response;
+    }
+    catch (Exception e) {
+        return e;
+    }
+  }
     /**
      * This method name and parameters must remain as-is
      */
     public static int add(int lhs, int rhs) {
-        return -1;
+        RemoteEcho add = new RemoteEcho("add", new Object[]{lhs, rhs});
+        Object response = makeRequest(add);
+        return (int)response;
     }
     /**
      * This method name and parameters must remain as-is
      */
     public static int divide(int num, int denom) {
-        return -1;
+        RemoteEcho divide = new RemoteEcho("divide", new Object[]{num, denom});
+        Object response = makeRequest(divide);
+        if (response instanceof ArithmeticException) throw (ArithmeticException) response;
+        return (int) response;
     }
     /**
      * This method name and parameters must remain as-is
      */
     public static String echo(String message) {
-        return "";
+        RemoteEcho echo = new RemoteEcho("echo", new Object[]{message});
+        Object response = makeRequest(echo);
+        return (String)response;
     }
 
     // Do not modify any code below this line
@@ -46,7 +74,7 @@ public class Client {
             System.out.print(".");
         else
             System.out.print("X");
-        
+
         System.out.println(" Finished");
     }
 }
